@@ -1,0 +1,25 @@
+$apt_script = <<SCRIPT
+apt-get update
+apt-get install -q -y git
+useradd kosuke -m -s /bin/bash -G sudo
+mkdir /home/kosuke/.ssh
+wget --no-check-certificate https://raw.githubusercontent.com/kosukenomoto/dotfiles/master/public_rsakey/wsl_rsa.pub -O /home/kosuke/.ssh/authorized_keys
+chown -R kosuke:kosuke /home/kosuke/.ssh
+chmod 700 /home/kosuke/.ssh
+chmod 600 /home/kosuke/.ssh/authorized_keys
+SCRIPT
+
+$ssh_script = <<SCRIPT
+cd ~
+git clone https://github.com/kosukenomoto/dotfiles.git
+cat ~/dotfiles/public_rsakey/wsl_rsa.pub >> ~/.ssh/authorized_keys
+chmod 600 ~/.ssh/authorized_keys
+SCRIPT
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "debian/jessie64"
+  config.vm.provision "shell",inline: $apt_script
+  config.vm.provision "shell",inline: $ssh_script, privileged: false
+  config.vm.define "debian64" do |t| end
+end
+
