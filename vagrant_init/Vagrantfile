@@ -1,3 +1,9 @@
+#local-login to guest by user"kosuke"on ssh
+#guest-chage user"vagrant":su - vagrant/vagrant
+#guest-set passwd of user"kosuke":sudo passwd kosuke
+#guest-set passwd of user"root" step1:sudo su -
+#guest-set passwd of user"root" step2:passwd
+
 $apt_script = <<SCRIPT
 apt-get update
 apt-get install -q -y git
