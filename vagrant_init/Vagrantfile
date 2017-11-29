@@ -3,18 +3,44 @@
 #guest-set passwd of user"kosuke":sudo passwd kosuke
 #guest-set passwd of user"root" step1:sudo su -
 #guest-set passwd of user"root" step2:passwd
+#info:host os:windows10 suspended when changed port 2200 or 2222 or etc...
+#guest-set chsh fish ; fisher update
 
+### user"root" provision ###
 $apt_script = <<SCRIPT
-apt-get update
-apt-get install -q -y git
 useradd kosuke -m -s /bin/bash -G sudo
 mkdir /home/kosuke/.ssh
 wget --no-check-certificate https://raw.githubusercontent.com/kosukenomoto/dotfiles/master/public_rsakey/wsl_rsa.pub -O /home/kosuke/.ssh/authorized_keys
 chown -R kosuke:kosuke /home/kosuke/.ssh
 chmod 700 /home/kosuke/.ssh
 chmod 600 /home/kosuke/.ssh/authorized_keys
+
+apt-get update
+apt-get install -q -y	git\
+			apt-transport-https \
+			ca-certificates \
+			curl \
+			gnupg2 \
+			software-properties-common 
+
+curl -fsSL https://download.docker.com/linux/$(. /etc/os-release; echo "$ID")/gpg | \
+	apt-key add -
+apt-key fingerprint 0EBFCD88
+add-apt-repository \
+	"deb [arch=amd64] https://download.docker.com/linux/$(. /etc/os-release; \
+	echo "$ID") $(lsb_release -cs) stable"
+apt-get update
+apt-get install -q -y docker-ce
+
+echo 'deb http://download.opensuse.org/repositories/shells:/fish:/release:/2/Debian_8.0/ /' > /etc/apt/sources.list.d/fish.list
+apt-get update
+apt-get install -q -y --force-yes fish
+curl -Lo /home/kosuke/.config/fish/functions/fisher.fish \
+	--create-dirs https://git.io/fisher
+chown -R kosuke:kosuke /home/kosuke/.config
 SCRIPT
 
+### user"vagrant" provision ###
 $ssh_script = <<SCRIPT
 cd ~
 git clone https://github.com/kosukenomoto/dotfiles.git
